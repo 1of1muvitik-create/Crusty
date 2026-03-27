@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: crusties-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: crusties_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - crusties-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # Backend API Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: crusties-backend
+    environment:
+      MONGO_URL: mongodb://admin:admin123@mongodb:27017
+      DB_NAME: crusties_db
+      CORS_ORIGINS: "*"
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-your-super-secret-key-change-in-production}
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_DAYS: 7
+      FRONTEND_URL: http://localhost:3000
+      REACT_APP_BACKEND_URL: http://localhost:8001
+    ports:
+      - "8001:8001"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - crusties-network
+    restart: unless-stopped
+
+  # Frontend Web Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: crusties-frontend
+    environment:
+      REACT_APP_BACKEND_URL: http://localhost:8001
+      REACT_APP_ENV: production
+      REACT_APP_API_TIMEOUT: 30000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - crusties-network
+    restart: unless-stopped
+
+networks:
+  crusties-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  mongodb_config:

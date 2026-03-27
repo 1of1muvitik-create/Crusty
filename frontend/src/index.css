@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Styles */
+* {
+  @apply antialiased;
+}
+
+body {
+  @apply font-inter text-dark bg-white;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-outfit font-bold;
+}
+
+code {
+  @apply font-mono text-sm;
+}
+
+/* Custom Components */
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-orange-600 transition-colors;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 border border-primary text-primary rounded-lg font-medium hover:bg-secondary transition-colors;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-100 p-4;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all;
+  }
+
+  .stat-card {
+    @apply bg-white rounded-lg shadow-sm p-6 border border-gray-100;
+  }
+}
+
+/* Toast Styles */
+[data-sonner-toast] {
+  @apply rounded-lg shadow-lg;
+}
+
+[data-sonner-toast][data-type='success'] {
+  @apply bg-green-50 border border-green-200;
+}
+
+[data-sonner-toast][data-type='error'] {
+  @apply bg-red-50 border border-red-200;
+}
+
+[data-sonner-toast][data-type='info'] {
+  @apply bg-blue-50 border border-blue-200;
+}
