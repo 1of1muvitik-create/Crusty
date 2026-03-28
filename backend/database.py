@@ -8,7 +8,12 @@ load_dotenv()
 MONGODB_URL = os.environ.get("MONGO_URL") or os.getenv("MONGODB_URL", "mongodb://localhost:27017")
 DATABASE_NAME = os.environ.get("DB_NAME") or os.getenv("DATABASE_NAME", "crusties_db")
 
-client = motor.motor_asyncio.AsyncIOMotorClient(MONGODB_URL)
+client = motor.motor_asyncio.AsyncIOMotorClient(
+    MONGODB_URL,
+    serverSelectionTimeoutMS=5000,
+    connectTimeoutMS=5000,
+    socketTimeoutMS=5000
+)
 database = client[DATABASE_NAME]
 
 # Collections
