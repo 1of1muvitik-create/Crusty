@@ -17,7 +17,6 @@ export const AdminProducts = () => {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    stock: '',
     image_url: ''
   })
 
@@ -42,7 +41,7 @@ export const AdminProducts = () => {
   }
 
   const handleCreate = async () => {
-    if (!formData.name || !formData.price || !formData.stock) {
+    if (!formData.name || !formData.price) {
       toast.error('Please fill all fields')
       return
     }
@@ -51,11 +50,11 @@ export const AdminProducts = () => {
       await productsAPI.create({
         name: formData.name,
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
-        image_url: formData.image_url
+        image_url: formData.image_url,
+        recipe: []
       })
       toast.success('Product created successfully')
-      setFormData({ name: '', price: '', stock: '', image_url: '' })
+      setFormData({ name: '', price: '', image_url: '' })
       setDialogOpen(false)
       fetchData()
     } catch (error) {
@@ -94,7 +93,8 @@ export const AdminProducts = () => {
   }
 
   const handleSaveRecipe = async () => {
-    if (!selectedProduct || recipe.length === 0) {
+    const selectedIngredients = recipe.filter(ing => ing.ingredient_id)
+    if (!selectedProduct || selectedIngredients.length === 0) {
       toast.error('Add at least one ingredient')
       return
     }
@@ -102,13 +102,13 @@ export const AdminProducts = () => {
     try {
       await recipesAPI.create({
         product_id: selectedProduct.id,
-        ingredients: recipe.filter(ing => ing.ingredient_id)
+        ingredients: selectedIngredients
       })
       toast.success('Recipe saved')
       setRecipeDialogOpen(false)
       fetchData()
     } catch (error) {
-      toast.error('Failed to save recipe')
+      toast.error(error.response?.data?.detail || error.message || 'Failed to save recipe')
     }
   }
 
@@ -119,7 +119,7 @@ export const AdminProducts = () => {
         <Button
           variant="primary"
           onClick={() => {
-            setFormData({ name: '', price: '', stock: '', image_url: '' })
+            setFormData({ name: '', price: '', image_url: '' })
             setDialogOpen(true)
           }}
         >
@@ -146,8 +146,11 @@ export const AdminProducts = () => {
               )}
               <h3 className="font-bold text-lg mb-2">{product.name}</h3>
               <p className="text-primary font-bold text-lg mb-2">{formatCurrency(product.price)}</p>
-              <p className={`text-sm mb-4 ${product.stock < 10 ? 'text-red-500 font-bold' : 'text-gray-600'}`}>
-                Stock: {product.stock} {product.stock < 10 && '⚠️'}
+              <p className={`text-sm mb-2 ${product.available_quantity <= 0 ? 'text-red-500 font-bold' : 'text-gray-600'}`}>
+                {product.available_quantity <= 0 ? 'Unavailable' : `Available: ${product.available_quantity}`}
+              </p>
+              <p className="text-sm text-gray-600 mb-4">
+                Recipe: {product.recipe?.length || 0} ingredient{product.recipe?.length === 1 ? '' : 's'}
               </p>
               <div className="flex gap-2 mt-auto">
                 <Button
@@ -192,13 +195,6 @@ export const AdminProducts = () => {
             placeholder="250"
           />
           <Input
-            label="Stock"
-            type="number"
-            value={formData.stock}
-            onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-            placeholder="10"
-          />
-          <Input
             label="Image URL"
             value={formData.image_url}
             onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
@@ -223,29 +219,32 @@ export const AdminProducts = () => {
       >
         <div className="space-y-4 max-h-96 overflow-y-auto">
           {recipe.map((ing, idx) => (
-            <div key={idx} className="flex gap-2">
-              <Select
-                options={ingredients.map(i => ({ value: i.id, label: i.name }))}
-                value={ing.ingredient_id}
-                onChange={(e) => {
-                  const newRecipe = [...recipe]
-                  newRecipe[idx].ingredient_id = e.target.value
-                  setRecipe(newRecipe)
-                }}
-                className="flex-1"
-              />
-              <Input
-                type="number"
-                step="0.1"
-                value={ing.quantity}
-                onChange={(e) => {
-                  const newRecipe = [...recipe]
-                  newRecipe[idx].quantity = parseFloat(e.target.value) || 0
-                  setRecipe(newRecipe)
-                }}
-                placeholder="Qty"
-                className="w-20"
-              />
+            <div key={idx} className="flex gap-2 items-end">
+              <div className="flex-1">
+                <Select
+                  options={ingredients.map(i => ({ value: i.id, label: i.name }))}
+                  value={ing.ingredient_id}
+                  onChange={(e) => {
+                    const newRecipe = [...recipe]
+                    newRecipe[idx].ingredient_id = e.target.value
+                    setRecipe(newRecipe)
+                  }}
+                />
+              </div>
+              <div className="w-24">
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={ing.quantity}
+                  onChange={(e) => {
+                    const newRecipe = [...recipe]
+                    newRecipe[idx].quantity = parseFloat(e.target.value) || 0
+                    setRecipe(newRecipe)
+                  }}
+                  placeholder="Qty"
+                  className="w-full"
+                />
+              </div>
               <Button variant="ghost" onClick={() => setRecipe(recipe.filter((_, i) => i !== idx))}>
                 Remove
               </Button>

@@ -21,7 +21,8 @@ export const ManagerDashboard = () => {
   const navItems = [
     { path: '/manager', label: 'Overview', icon: LayoutDashboard, end: true },
     { path: '/manager/analytics', label: 'Analytics', icon: BarChart3 },
-    { path: '/manager/performance', label: 'Sales Performance', icon: Users },
+    { path: '/manager/performance', label: 'Sales Performance', icon: TrendingUp },
+    { path: '/manager/users', label: 'Users', icon: Users },
   ]
 
   return (
@@ -80,6 +81,7 @@ export const ManagerDashboard = () => {
           <Route index element={<ManagerOverview />} />
           <Route path="analytics" element={<ManagerAnalytics />} />
           <Route path="performance" element={<ManagerSalesPerformance />} />
+          <Route path="users" element={<ManagerUsers />} />
         </Routes>
       </main>
     </div>
@@ -189,7 +191,7 @@ const ManagerOverview = () => {
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => formatCurrency(value)}
             />
             <Tooltip 
               formatter={(value) => [formatCurrency(value), 'Revenue']}
@@ -212,7 +214,7 @@ const ManagerOverview = () => {
       </Card>
 
       {/* Bottom Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Top Products */}
         <Card className="p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Top Selling Products</h2>
@@ -233,6 +235,25 @@ const ManagerOverview = () => {
             ))}
             {(!stats?.top_products || stats.top_products.length === 0) && (
               <p className="text-center text-gray-500 py-4">No sales data yet</p>
+            )}
+          </div>
+        </Card>
+
+        {/* Top Sellers */}
+        <Card className="p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Top Sellers</h2>
+          <div className="space-y-4">
+            {(stats?.top_sellers || []).slice(0, 5).map((seller, idx) => (
+              <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <p className="font-medium">{seller.user_name}</p>
+                  <p className="text-sm text-gray-500">{seller.total_sales} sales</p>
+                </div>
+                <p className="font-bold text-green-600">{formatCurrency(seller.total_revenue)}</p>
+              </div>
+            ))}
+            {(!stats?.top_sellers || stats.top_sellers.length === 0) && (
+              <p className="text-center text-gray-500 py-4">No top sellers yet</p>
             )}
           </div>
         </Card>
@@ -321,7 +342,7 @@ const ManagerAnalytics = () => {
             <YAxis 
               stroke="#9ca3af"
               fontSize={12}
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => formatCurrency(value)}
             />
             <Tooltip 
               formatter={(value) => [formatCurrency(value), 'Revenue']}
@@ -398,6 +419,74 @@ const ManagerAnalytics = () => {
 }
 
 // Sales Performance Page
+const ManagerUsers = () => {
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true)
+      const res = await managerAPI.getUsers()
+      setUsers(res.data)
+    } catch (error) {
+      toast.error('Failed to load users')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Users</h1>
+        <p className="text-gray-500 mt-1">List of system users available to the manager.</p>
+      </div>
+
+      <Card className="p-6">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-3 px-4 font-semibold">Name</th>
+                <th className="text-left py-3 px-4 font-semibold">Email</th>
+                <th className="text-left py-3 px-4 font-semibold">Phone</th>
+                <th className="text-left py-3 px-4 font-semibold">Status</th>
+                <th className="text-left py-3 px-4 font-semibold">Joined</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id} className="border-b hover:bg-gray-50">
+                  <td className="py-3 px-4 font-medium">{user.name}</td>
+                  <td className="py-3 px-4 text-gray-600">{user.email}</td>
+                  <td className="py-3 px-4 text-gray-600">{user.phone || '—'}</td>
+                  <td className="py-3 px-4 text-sm">
+                    {user.suspended ? (
+                      <span className="inline-flex px-2 py-1 rounded-full bg-red-100 text-red-700">Suspended</span>
+                    ) : user.approved ? (
+                      <span className="inline-flex px-2 py-1 rounded-full bg-green-100 text-green-700">Active</span>
+                    ) : (
+                      <span className="inline-flex px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">Pending</span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4 text-gray-500 text-sm">{new Date(user.created_at).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {users.length === 0 && (
+            <p className="text-center text-gray-500 py-8">No users found</p>
+          )}
+        </div>
+      </Card>
+    </div>
+  )
+}
+
 const ManagerSalesPerformance = () => {
   const [salesData, setSalesData] = useState([])
   const [loading, setLoading] = useState(true)
@@ -479,7 +568,7 @@ const ManagerSalesPerformance = () => {
             <YAxis 
               stroke="#9ca3af"
               fontSize={12}
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => formatCurrency(value)}
             />
             <Tooltip 
               formatter={(value) => [formatCurrency(value), 'Revenue']}

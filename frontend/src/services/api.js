@@ -1,6 +1,5 @@
 import axios from 'axios'
 
-// Use React environment variable format for env vars
 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001'
 
 console.log('API Configuration:', { API_URL })
@@ -36,16 +35,19 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: (email, password) => api.post('/api/auth/login', { email, password }),
-  register: (email, name, phone, password) => 
+  register: (email, name, phone, password) =>
     api.post('/api/auth/register', { email, name, phone, password }),
-  resetPassword: (phone) => api.post('/api/auth/reset-password', { phone }),
-  verifyCode: (phone, code, newPassword) => 
-    api.post('/api/auth/verify-code', { phone, code, new_password: newPassword })
+  // Updated: now sends email instead of phone
+  resetPassword: (email) => api.post('/api/auth/reset-password', { email }),
+  // Code-based reset confirmation used on /reset-password page
+  resetPasswordWithToken: (email, code, newPassword) =>
+    api.post('/api/auth/reset-password-token', { email, token: code, new_password: newPassword })
 }
 
 // Products API
 export const productsAPI = {
   getAll: () => api.get('/api/products'),
+  getAvailable: (id) => api.get(`/api/products/${id}/available`),
   create: (data) => api.post('/api/products', data),
   update: (id, data) => api.put(`/api/products/${id}`, data),
   delete: (id) => api.delete(`/api/products/${id}`)
@@ -71,11 +73,16 @@ export const salesAPI = {
   create: (data) => api.post('/api/sales', data)
 }
 
-// Users API
+// Users API — updated with getAll, suspend, unsuspend, delete
 export const usersAPI = {
+  getAll: () => api.get('/api/users'),
   getPending: () => api.get('/api/users/pending'),
+  create: (data) => api.post('/api/users', data),
   approve: (id) => api.post(`/api/users/${id}/approve`),
-  reject: (id) => api.post(`/api/users/${id}/reject`)
+  reject: (id) => api.post(`/api/users/${id}/reject`),
+  suspend: (id) => api.post(`/api/users/${id}/suspend`),
+  unsuspend: (id) => api.post(`/api/users/${id}/unsuspend`),
+  delete: (id) => api.delete(`/api/users/${id}`)
 }
 
 // Analytics API
@@ -94,8 +101,9 @@ export const notificationsAPI = {
 // Manager Analytics API
 export const managerAPI = {
   getDashboard: () => api.get('/api/manager/analytics/dashboard'),
-  getSalesPerformance: (days = 30) => 
-    api.get(`/api/manager/analytics/sales-performance?days=${days}`)
+  getSalesPerformance: (days = 30) =>
+    api.get(`/api/manager/analytics/sales-performance?days=${days}`),
+  getUsers: () => api.get('/api/manager/users')
 }
 
 export default api

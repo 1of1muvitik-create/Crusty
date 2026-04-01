@@ -148,12 +148,12 @@ export const AdminIngredients = () => {
               placeholder="10"
               className="flex-1"
             />
-            <div className="flex-1">
+            <div className="flex-1 min-w-[150px]">
               <label className="block text-sm font-medium mb-2">Unit</label>
               <select
                 value={formData.unit}
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                className="w-full min-w-[150px] px-3 py-2 border border-gray-300 rounded-lg"
               >
                 <option value="kg">kg</option>
                 <option value="liters">liters</option>

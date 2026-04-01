@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { UserDashboard } from './pages/user/UserDashboard'
 import { ManagerDashboard } from './pages/manager/ManagerDashboard'
+import { ResetPasswordPage } from './pages/ResetPasswordPage'
 
 function AppRoutes() {
   const auth = React.useContext(AuthContext)
@@ -100,9 +101,9 @@ function AppRoutes() {
           ) : (
             <Navigate to="/login" />
           )
-        } 
+        }
       />
-      
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

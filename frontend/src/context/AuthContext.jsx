@@ -86,6 +86,19 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const confirmPasswordReset = async (email, code, newPassword) => {
+    try {
+      const response = await api.post('/api/auth/reset-password-token', {
+        email,
+        token: code,
+        new_password: newPassword
+      })
+      return response.data
+    } catch (error) {
+      throw error.response?.data || error.message
+    }
+  }
+
   const logout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -95,28 +108,18 @@ export const AuthProvider = ({ children }) => {
     delete api.defaults.headers.common['Authorization']
   }
 
-  const requestPasswordReset = async (phone) => {
-    try {
-      const response = await api.post('/api/auth/reset-password', { phone })
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error.message
-    }
-  }
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001'
 
-  const verifyCode = async (phone, code, newPassword) => {
-    try {
-      const response = await api.post('/api/auth/verify-code', {
-        phone,
-        code,
-        new_password: newPassword
-      })
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error.message
-    }
-  }
-
+const requestPasswordReset = async (email) => {
+  const res = await fetch(`${API_URL}/api/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  })
+  const data = await res.json()
+  if (!res.ok) throw data
+  return data
+}
   return (
     <AuthContext.Provider value={{
       user,
@@ -126,7 +129,7 @@ export const AuthProvider = ({ children }) => {
       register,
       logout,
       requestPasswordReset,
-      verifyCode,
+      confirmPasswordReset,
       isAuthenticated: !!token
     }}>
       {children}

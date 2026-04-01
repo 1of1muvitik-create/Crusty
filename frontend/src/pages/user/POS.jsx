@@ -29,7 +29,7 @@ export const UserPOS = () => {
   }
 
   const addToCart = (product) => {
-    if (product.stock <= 0) {
+    if ((product.available_quantity ?? 0) <= 0) {
       toast.error('Out of stock')
       return
     }
@@ -37,14 +37,14 @@ export const UserPOS = () => {
     const existingItem = cart.find(item => item.id === product.id)
     
     if (existingItem) {
-      if (existingItem.quantity < product.stock) {
+      if (existingItem.quantity < (product.available_quantity ?? 0)) {
         setCart(cart.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         ))
       } else {
-        toast.error('Cannot exceed available stock')
+        toast.error('Cannot exceed available quantity')
       }
     } else {
       setCart([...cart, {
@@ -62,14 +62,14 @@ export const UserPOS = () => {
       removeFromCart(productId)
     } else {
       const product = products.find(p => p.id === productId)
-      if (quantity <= product.stock) {
+      if (quantity <= (product.available_quantity ?? 0)) {
         setCart(cart.map(item =>
           item.id === productId
             ? { ...item, quantity }
             : item
         ))
       } else {
-        toast.error('Cannot exceed available stock')
+        toast.error('Cannot exceed available quantity')
       }
     }
   }
@@ -125,13 +125,13 @@ export const UserPOS = () => {
               )}
               <h3 className="font-bold text-lg mb-2">{product.name}</h3>
               <p className="text-primary font-bold text-xl mb-2">{formatCurrency(product.price)}</p>
-              <p className={`text-sm mb-4 ${product.stock <= 0 ? 'text-red-500 font-bold' : 'text-gray-600'}`}>
-                {product.stock <= 0 ? 'Out of Stock' : `Stock: ${product.stock}`}
+              <p className={`text-sm mb-4 ${((product.available_quantity ?? 0) <= 0) ? 'text-red-500 font-bold' : 'text-gray-600'}`}>
+                {(product.available_quantity ?? 0) <= 0 ? 'Out of Stock' : `Available: ${product.available_quantity}`}
               </p>
               <Button
-                variant={product.stock <= 0 ? 'ghost' : 'primary'}
+                variant={(product.available_quantity ?? 0) <= 0 ? 'ghost' : 'primary'}
                 onClick={() => addToCart(product)}
-                disabled={product.stock <= 0}
+                disabled={(product.available_quantity ?? 0) <= 0}
                 className="w-full"
               >
                 <Plus size={18} />
