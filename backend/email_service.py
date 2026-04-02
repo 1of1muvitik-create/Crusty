@@ -1,10 +1,14 @@
 import smtplib
 import os
+from pathlib import Path
 from email.message import EmailMessage
 from typing import Optional
 from dotenv import load_dotenv
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+DOTENV_PATH = BASE_DIR / '.env'
+load_dotenv(dotenv_path=DOTENV_PATH)
+print(f"[email_service] Loading SMTP env from {DOTENV_PATH}")
 
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))
