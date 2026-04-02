@@ -474,7 +474,7 @@ async def update_ingredient(ingredient_id: str, ingredient: IngredientUpdate, cu
     if current_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
     try:
-        Update_data = {k: v for k, v in ingredient.dict().items() if v is not None}
+        update_data = {k: v for k, v in ingredient.dict().items() if v is not None}
         result = await ingredients_collection.update_one({"_id": ObjectId(ingredient_id)}, {"$set": update_data})
         if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Ingredient not found")
