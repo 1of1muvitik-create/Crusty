@@ -120,6 +120,7 @@ async def login(credentials: UserLogin):
 async def request_password_reset(request: PasswordResetEmail):
     user = await users_collection.find_one({"email": request.email})
     if not user:
+        print(f"[auth] reset password requested for unknown email: {request.email}")
         return {"message": "If that email exists, a verification code has been sent."}
     if user.get("suspended"):
         raise HTTPException(status_code=403, detail="Suspended accounts cannot reset password")

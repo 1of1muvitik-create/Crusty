@@ -7,6 +7,7 @@ import { LoginPage } from './pages/LoginPage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { UserDashboard } from './pages/user/UserDashboard'
 import { ManagerDashboard } from './pages/manager/ManagerDashboard'
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
 
 function AppRoutes() {
@@ -104,6 +105,7 @@ function AppRoutes() {
           )
         }
       />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" />} />

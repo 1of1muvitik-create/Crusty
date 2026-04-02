@@ -19,13 +19,6 @@ export const LoginPage = () => {
   const [loginLoading, setLoginLoading] = useState(false)
   const [showLoginPassword, setShowLoginPassword] = useState(false)
 
-
-  // Forgot password dialog — email based
-  const [resetOpen, setResetOpen] = useState(false)
-  const [resetEmail, setResetEmail] = useState('')
-  const [resetLoading, setResetLoading] = useState(false)
-  const [resetSent, setResetSent] = useState(false)
-
   const handleLogin = async (e) => {
     e.preventDefault()
     setLoginLoading(true)
@@ -54,28 +47,6 @@ export const LoginPage = () => {
       setPendingRole(null)
     }
   }, [pendingDestination, pendingRole, auth.isAuthenticated, auth.user])
-
-
-  const handleResetRequest = async () => {
-    if (!resetEmail) {
-      toast.error('Please enter your email address')
-      return
-    }
-    setResetLoading(true)
-    try {
-      await auth.requestPasswordReset?.(resetEmail)
-      setResetSent(true)
-    } catch (error) {
-      toast.error(error.detail || 'Failed to send reset email')
-    }
-    setResetLoading(false)
-  }
-
-  const handleCloseReset = () => {
-    setResetOpen(false)
-    setResetEmail('')
-    setResetSent(false)
-  }
 
   return (
     <div className="min-h-screen flex">
@@ -135,7 +106,7 @@ export const LoginPage = () => {
                     </Button>
                     <button
                       type="button"
-                      onClick={() => setResetOpen(true)}
+                      onClick={() => navigate('/forgot-password')}
                       className="text-sm text-primary hover:underline"
                     >
                       Forgot password?
@@ -147,50 +118,6 @@ export const LoginPage = () => {
           />
         </div>
       </div>
-
-      {/* Forgot Password Dialog */}
-      <Dialog open={resetOpen} onOpenChange={handleCloseReset} title="Reset Password" className="max-w-md">
-        {resetSent ? (
-          <div className="space-y-4 text-center">
-            <div className="text-4xl">📧</div>
-            <p className="font-semibold text-gray-800">Check your email</p>
-            <p className="text-sm text-gray-600">
-              If <strong>{resetEmail}</strong> is registered, you'll receive a
-              verification code by email. The code expires in 15 minutes.
-            </p>
-            <p className="text-xs text-gray-400">Don't see it? Check your spam folder.</p>
-            <Button variant="primary" onClick={() => navigate('/reset-password')} className="w-full">
-              Enter code and reset password
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Enter your account email and we'll send you a verification code to reset your password.
-            </p>
-            <Input
-              type="email"
-              placeholder="Your email address"
-              value={resetEmail}
-              onChange={(e) => setResetEmail(e.target.value)}
-              icon={<Mail size={18} />}
-            />
-            <div className="flex gap-2">
-              <Button variant="ghost" onClick={handleCloseReset} className="flex-1">
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleResetRequest}
-                className="flex-1"
-                disabled={resetLoading || !resetEmail}
-              >
-                {resetLoading ? 'Sending...' : 'Send Verification Code'}
-              </Button>
-            </div>
-          </div>
-        )}
-      </Dialog>
     </div>
   )
 }
