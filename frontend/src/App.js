@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { AuthProvider, AuthContext } from './context/AuthContext'
+import { LandingPage } from './pages/LandingPage'
 import { LoginPage } from './pages/LoginPage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { UserDashboard } from './pages/user/UserDashboard'
@@ -99,7 +100,7 @@ function AppRoutes() {
               <Navigate to="/user/pos" />
             )
           ) : (
-            <Navigate to="/login" />
+            <LandingPage />
           )
         }
       />
